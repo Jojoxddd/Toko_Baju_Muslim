@@ -1,32 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">Dashboard Admin - Produk</h1>
+<div class="container mt-5">
+    <h1 class="mb-4">Dashboard Admin - Daftar Produk</h1>
 
-    <a href="{{ route('admin.dashboard.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
-        + Tambah Produk
-    </a>
-
-    @foreach ($produk as $item)
-        <div class="border p-4 mb-4 flex items-center gap-4">
-            @if($item->image)
-                <img src="{{ asset('storage/' . $item->image) }}" class="w-24 h-24 object-cover rounded">
-            @endif
-            <div>
-                <div class="font-bold">{{ $item->name }}</div>
-                <div>Rp {{ number_format($item->price, 0, ',', '.') }}</div>
-                <div>Stok: {{ $item->stock }}</div>
-                <div>Kategori: {{ $item->category }}</div>
-            </div>
-            <div class="ml-auto">
-                <a href="{{ route('admin.dashboard.edit', $item->id) }}" class="text-blue-600 mr-2">Edit</a>
-                <form action="{{ route('admin.dashboard.destroy', $item->id) }}" method="POST" class="inline">
-                    @csrf @method('DELETE')
-                    <button onclick="return confirm('Yakin hapus?')" class="text-red-600">Hapus</button>
-                </form>
-            </div>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
         </div>
-    @endforeach
+    @endif
+
+    <div class="mb-3">
+        <a href="{{ route('admin.dashboard.create') }}" class="btn btn-primary">
+            + Tambah Produk
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Gambar</th>
+                    <th>Nama</th>
+                    <th>Harga</th>
+                    <th>Stok</th>
+                    <th>Kategori</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($produk as $item)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>
+                            @if ($item->image)
+                                <img src="{{ asset('storage/' . $item->image) }}" alt="Gambar"
+                                     width="60" height="60" class="img-thumbnail">
+                            @else
+                                <span class="text-muted">No Image</span>
+                            @endif
+                        </td>
+                        <td>{{ $item->name }}</td>
+                        <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                        <td>{{ $item->stock }}</td>
+                        <td>{{ $item->category }}</td>
+                        <td>
+                            <a href="{{ route('admin.dashboard.edit', $item->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form action="{{ route('admin.dashboard.destroy', $item->id) }}" method="POST" class="d-inline"
+                                  onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-danger">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center">Belum ada produk.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

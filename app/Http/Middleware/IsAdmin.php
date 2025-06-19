@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Middleware;
 
 use Closure;
@@ -13,7 +12,6 @@ class IsAdmin
             return $next($request);
         }
 
-        abort(403, 'Akses ditolak. Anda bukan admin.');
+        abort(403, 'Akses hanya untuk admin.');
     }
 }
-
