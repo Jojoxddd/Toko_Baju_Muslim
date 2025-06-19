@@ -1,18 +1,16 @@
-<?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use App\Models\Product;
 use Illuminate\Support\Facades\Storage;
 
 class ProductImageController extends Controller
 {
     public function index()
     {
-        $images = ProductImage::latest()->paginate(10);
-        return view('admin.dashboard.index', compact('images'));
+        $produk = Product::all();
+        return view('admin.dashboard.index', compact('produk'));
     }
 
     public function create()
@@ -22,50 +20,60 @@ class ProductImageController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'image' => 'required|image',
-        ]);
-
-        $path = $request->file('image')->store('images', 'public');
-
-        ProductImage::create([
-            'title' => $request->title,
-            'image' => $path,
-        ]);
-
-        return redirect()->route('admin.dashboard.index')->with('success', 'Gambar ditambahkan');
-    }
-
-    public function edit(ProductImage $dashboard)
-    {
-        return view('admin.dashboard.edit', ['image' => $dashboard]);
-    }
-
-    public function update(Request $request, ProductImage $dashboard)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'image' => 'nullable|image',
+        $data = $request->validate([
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|numeric',
+            'category' => 'required',
+            'image' => 'nullable|image|max:2048'
         ]);
 
         if ($request->hasFile('image')) {
-            Storage::disk('public')->delete($dashboard->image);
-            $path = $request->file('image')->store('images', 'public');
-            $dashboard->image = $path;
+            $data['image'] = $request->file('image')->store('', 'public');
         }
 
-        $dashboard->title = $request->title;
-        $dashboard->save();
-
-        return redirect()->route('admin.dashboard.index')->with('success', 'Gambar diperbarui');
+        Product::create($data);
+        return redirect()->route('admin.dashboard.index')->with('success', 'Produk ditambahkan.');
     }
 
-    public function destroy(ProductImage $dashboard)
+    public function edit($id)
     {
-        Storage::disk('public')->delete($dashboard->image);
-        $dashboard->delete();
+        $produk = Product::findOrFail($id);
+        return view('admin.dashboard.edit', compact('produk'));
+    }
 
-        return back()->with('success', 'Gambar dihapus');
+    public function update(Request $request, $id)
+    {
+        $produk = Product::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|numeric',
+            'category' => 'required',
+            'image' => 'nullable|image|max:2048'
+        ]);
+
+        if ($request->hasFile('image')) {
+            // Hapus gambar lama jika ada
+            if ($produk->image) {
+                Storage::disk('public')->delete($produk->image);
+            }
+            $data['image'] = $request->file('image')->store('', 'public');
+        }
+
+        $produk->update($data);
+        return redirect()->route('admin.dashboard.index')->with('success', 'Produk diupdate.');
+    }
+
+    public function destroy($id)
+    {
+        $produk = Product::findOrFail($id);
+        if ($produk->image) {
+            Storage::disk('public')->delete($produk->image);
+        }
+        $produk->delete();
+        return redirect()->route('admin.dashboard.index')->with('success', 'Produk dihapus.');
     }
 }
+

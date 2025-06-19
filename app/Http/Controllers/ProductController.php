@@ -11,6 +11,7 @@ class ProductController extends Controller
     public function kategori($kategori)
     {
         $produk = Product::where('category', $kategori)->get();
-        return view('produk.kategori', compact('produk', 'kategori'));
+        return view('kategori', compact('produk', 'kategori'));
+
     }
 }

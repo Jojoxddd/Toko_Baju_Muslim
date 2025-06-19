@@ -1,9 +1,10 @@
 <?php
-
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,12 +21,23 @@ Route::get('/produk/{kategori}', [ProductController::class, 'kategori'])->name('
 // });
 
 
-Route::middleware('auth')->prefix('admin')->name('admin.dashboard.')->group(function () {
-    Route::resource('dashboard', ProductImageController::class);
-});
 
 
+Route::post('/login-admin', function (Request $request) {
+    $credentials = $request->only('email', 'password');
 
+    // Cek role = admin
+    if (Auth::attempt($credentials)) {
+        if (Auth::user()->role === 'admin') {
+            return redirect('/admin/dashboard');
+        } else {
+            Auth::logout(); // bukan admin
+            return back()->withErrors(['email' => 'Akun ini bukan admin.']);
+        }
+    }
+
+    return back()->withErrors(['email' => 'Email atau password salah.']);
+})->name('login.admin.submit');
 
 
 // Route auth register/login/logout (cukup sekali)
@@ -41,4 +53,8 @@ Route::get('/login-page', function () {
 
 Route::get('/register-page', function () {
     return view('auth.register');
+});
+
+Route::middleware(['auth', 'isadmin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('dashboard', ProductImageController::class);
 });

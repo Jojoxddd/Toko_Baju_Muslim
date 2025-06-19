@@ -1,32 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h2>Dashboard Admin - Gambar Produk</h2>
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">Dashboard Admin - Produk</h1>
 
+    <a href="{{ route('admin.dashboard.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded mb-4 inline-block">
+        + Tambah Produk
+    </a>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <div class="row">
-        @foreach($images as $image)
-        <div class="col-md-3 mb-4">
-            <div class="card">
-                <img src="{{ asset('storage/' . $image->image) }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ $image->title }}</h5>
-                    <a href="{{ route('admin.dashboard.edit', $image->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="{{ route('admin.dashboard.destroy', $image->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin?')">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-sm btn-danger">Hapus</button>
-                    </form>
-                </div>
+    @foreach ($produk as $item)
+        <div class="border p-4 mb-4 flex items-center gap-4">
+            @if($item->image)
+                <img src="{{ asset('storage/' . $item->image) }}" class="w-24 h-24 object-cover rounded">
+            @endif
+            <div>
+                <div class="font-bold">{{ $item->name }}</div>
+                <div>Rp {{ number_format($item->price, 0, ',', '.') }}</div>
+                <div>Stok: {{ $item->stock }}</div>
+                <div>Kategori: {{ $item->category }}</div>
+            </div>
+            <div class="ml-auto">
+                <a href="{{ route('admin.dashboard.edit', $item->id) }}" class="text-blue-600 mr-2">Edit</a>
+                <form action="{{ route('admin.dashboard.destroy', $item->id) }}" method="POST" class="inline">
+                    @csrf @method('DELETE')
+                    <button onclick="return confirm('Yakin hapus?')" class="text-red-600">Hapus</button>
+                </form>
             </div>
         </div>
-        @endforeach
-    </div>
-
-    {{ $images->links() }}
+    @endforeach
 </div>
 @endsection
